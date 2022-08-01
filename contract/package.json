@@ -1,0 +1,12 @@
+{
+  "name": "contract",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "build": "yarn asb"
+  },
+  "dependencies": {
+    "near-sdk-as": "^3.2.3"
+  }
+}

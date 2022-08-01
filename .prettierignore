@@ -1,0 +1,15 @@
+.vscode
+.vercel
+.next
+
+node_modules
+
+public
+dist
+lib
+etc
+build
+
+package-lock.json
+yarn.lock
+package.json
