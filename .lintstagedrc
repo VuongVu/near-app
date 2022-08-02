@@ -1,4 +1,4 @@
 {
-    "*.{js,jsx,ts,tsx}": ['yarn lint:es'],
+    "*.{js,jsx,ts,tsx}": ['yarn prettier', 'yarn lint:es'],
     '*.json': ['yarn prettier'],
 }
