@@ -35,3 +35,5 @@ export class Ticket {
 }
 
 export const ticketsStorage = new PersistentUnorderedMap<string, Ticket>('TICKETS');
+
+export const soldTicketsStorage = new PersistentUnorderedMap<string, Array<string>>('SOLD_TICKETS');

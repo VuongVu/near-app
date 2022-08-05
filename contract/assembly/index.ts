@@ -1,4 +1,4 @@
-import { Ticket, ticketsStorage } from './model';
+import { soldTicketsStorage, Ticket, ticketsStorage } from './model';
 import { context, ContractPromiseBatch } from 'near-sdk-as';
 
 export function initialTicket(newTicket: Ticket): void {
@@ -8,6 +8,36 @@ export function initialTicket(newTicket: Ticket): void {
     }
 
     ticketsStorage.set(newTicket.id, Ticket.initial(newTicket));
+}
+
+export function increaseTickets(ticketId: string, quantity: u32): void {
+    let ticket = ticketsStorage.get(ticketId);
+    if (!ticket) {
+        throw new Error('Ticket not found');
+    }
+    if (ticket.owner != context.sender) {
+        throw new Error("You don't have permission");
+    }
+
+    ticket.remaining += quantity;
+    ticketsStorage.set(ticketId, ticket);
+}
+
+export function reduceTickets(ticketId: string, quantity: u32): void {
+    let ticket = ticketsStorage.get(ticketId);
+    if (!ticket) {
+        throw new Error('Ticket not found');
+    }
+    if (ticket.owner != context.sender) {
+        throw new Error("You don't have permission");
+    }
+
+    if (ticket.remaining < quantity) {
+        ticket.remaining = 0;
+    } else {
+        ticket.remaining -= quantity;
+    }
+    ticketsStorage.set(ticketId, ticket);
 }
 
 export function buyTicket(ticketId: string): void {
@@ -27,6 +57,14 @@ export function buyTicket(ticketId: string): void {
     ContractPromiseBatch.create(ticket.owner).transfer(context.attachedDeposit);
     ticket.soldTicket();
     ticketsStorage.set(ticket.id, ticket);
+
+    let prevTickets = soldTicketsStorage.get(context.sender);
+
+    if (!prevTickets) {
+        prevTickets = new Array<string>();
+    }
+    prevTickets.push(ticketId);
+    soldTicketsStorage.set(context.sender, prevTickets);
 }
 
 export function getTicket(id: string): Ticket | null {
@@ -35,4 +73,20 @@ export function getTicket(id: string): Ticket | null {
 
 export function getTickets(): Ticket[] {
     return ticketsStorage.values();
+}
+
+export function getUserTickets(): Ticket[] {
+    let tickets = soldTicketsStorage.get(context.sender);
+
+    let ticketArray: Ticket[] = [];
+
+    if (tickets) {
+        for (let i = 0; i < tickets.length; i++) {
+            let ticket = ticketsStorage.get(tickets[i]);
+            if (ticket) {
+                ticketArray.push(ticket);
+            }
+        }
+    }
+    return ticketArray;
 }
