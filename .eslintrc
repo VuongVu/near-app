@@ -32,6 +32,8 @@
         "@typescript-eslint/no-var-requires": 0,
         "@typescript-eslint/no-empty-function": 0,
 
+        "@next/next/no-img-element": 0,
+
         "prettier/prettier": "error"
     },
     "settings": {

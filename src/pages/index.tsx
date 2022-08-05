@@ -1,25 +1,73 @@
 import { useCallback, useEffect, useState } from 'react';
 import Head from 'next/head';
+import { toast } from 'react-toastify';
+
+import Layout from 'components/layout';
+import TicketCard from 'components/ticket/TicketCard';
 
 import { ROUTERS } from 'routers';
+import AddTicket from 'components/ticket/AddTicket';
 import useNearApp from 'utils/near/useNearApp';
-import useMarketplace, { type Product } from 'utils/near/useMarketplace';
+import useTicket, { type Ticket } from 'utils/near/useTicket';
+import getErrorMessage from 'utils/getErrorMessage';
 
 const Home: NextPageProps = () => {
-    const { login, logout, getAccountId } = useNearApp();
-    const { getProducts } = useMarketplace();
+    const { login, getAccountId } = useNearApp();
+    const { getTickets, buyTicket, initialTicket } = useTicket();
     const account = getAccountId();
-    const [products, setProducts] = useState<Product[]>([]);
+    const [tickets, setTickets] = useState<Ticket[]>([]);
+    const [openAddTicket, setOpenAddTicket] = useState(false);
+    const [loading, setLoading] = useState(false);
 
-    const fetchProducts = useCallback(async () => {
+    const fetchTickets = useCallback(async () => {
         if (account) {
-            setProducts(await getProducts());
+            setTickets(await getTickets());
         }
-    }, [account, getProducts]);
+    }, [account, getTickets]);
 
     useEffect(() => {
-        fetchProducts();
-    }, [fetchProducts]);
+        fetchTickets();
+    }, [fetchTickets]);
+
+    const handleBuyTicket = useCallback(
+        async ({ id, price }: Pick<Ticket, 'id' | 'price'>) => {
+            try {
+                await buyTicket({ id, price });
+
+                fetchTickets();
+            } catch (error) {
+                toast(getErrorMessage(error), { type: 'error' });
+            }
+        },
+        [buyTicket, fetchTickets],
+    );
+
+    const handleOpenAddTicketModal = useCallback(() => {
+        setOpenAddTicket(true);
+    }, []);
+
+    const handleCloseAddTicketModal = useCallback(() => {
+        setOpenAddTicket(false);
+    }, []);
+
+    const handleSubmitAddTicket = useCallback(
+        async (newTicket: Ticket) => {
+            try {
+                setLoading(true);
+
+                await initialTicket(newTicket);
+
+                toast('Add ticket success', { type: 'success' });
+                setOpenAddTicket(false);
+                fetchTickets();
+            } catch (error) {
+                toast(getErrorMessage(error), { type: 'error' });
+            } finally {
+                setLoading(false);
+            }
+        },
+        [fetchTickets, initialTicket],
+    );
 
     return (
         <>
@@ -27,27 +75,45 @@ const Home: NextPageProps = () => {
                 <title>{ROUTERS.HOME.title}</title>
             </Head>
 
-            <div>
-                {account ? (
-                    products.map(product => <div key={product.id}>{product.name}</div>)
-                ) : (
-                    <button
-                        onClick={login}
-                        type="button"
-                        className="mr-2 mb-2 rounded-lg bg-gradient-to-r from-cyan-400 via-cyan-500 to-cyan-600 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-gradient-to-br focus:ring-4 focus:ring-cyan-300 dark:focus:ring-cyan-800">
-                        Connect Wallet
-                    </button>
-                )}
+            <div className="hero min-h-screen bg-base-200">
+                <div className="hero-content flex flex-col">
+                    {account ? (
+                        <>
+                            <button
+                                onClick={handleOpenAddTicketModal}
+                                type="button"
+                                className="btn btn-active btn-secondary btn-sm">
+                                Add Ticket
+                            </button>
 
-                <button
-                    onClick={logout}
-                    type="button"
-                    className="mr-2 mb-2 rounded-lg bg-gradient-to-r from-red-400 via-red-500 to-red-600 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-gradient-to-br focus:ring-4 focus:ring-red-300 dark:focus:ring-red-800">
-                    Logout
-                </button>
+                            <div className="grid grid-cols-2 gap-2">
+                                {tickets.map(ticket => (
+                                    <TicketCard
+                                        key={ticket.id}
+                                        ticket={ticket}
+                                        onBuyTicket={() => handleBuyTicket({ id: ticket.id, price: ticket.price })}
+                                    />
+                                ))}
+                            </div>
+                        </>
+                    ) : (
+                        <button onClick={login} type="button" className="btn btn-primary btn-active btn-sm">
+                            Connect Wallet
+                        </button>
+                    )}
+                </div>
             </div>
+
+            <AddTicket
+                open={openAddTicket}
+                onSubmit={handleSubmitAddTicket}
+                onClose={handleCloseAddTicketModal}
+                loading={loading}
+            />
         </>
     );
 };
+
+Home.Layout = Layout;
 
 export default Home;

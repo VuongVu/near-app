@@ -14,8 +14,8 @@ export default async function initializeContract() {
     const walletConnection = new WalletConnection(near, APP_CONFIGS.APP_PREFIX!);
     const accountId = walletConnection.getAccountId();
     const contract = new Contract(walletConnection.account(), nearEnv.contractName!, {
-        viewMethods: ['getProduct', 'getProducts'],
-        changeMethods: ['buyProduct', 'setProduct'],
+        viewMethods: ['getTicket', 'getTickets'],
+        changeMethods: ['buyTicket', 'initialTicket'],
     });
 
     store.dispatch(nearActions.initializeContract({ walletConnection, accountId, contract }));

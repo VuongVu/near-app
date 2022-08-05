@@ -2,5 +2,6 @@
 @import './base.css';
 
 @tailwind components;
+@import 'react-toastify/dist/ReactToastify.min.css';
 
 @tailwind utilities;

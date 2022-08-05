@@ -5,6 +5,7 @@ const defaultTheme = require('tailwindcss/defaultTheme');
  */
 module.exports = {
     content: ['./src/**/*.{js,ts,jsx,tsx}'],
+    plugins: [require('@tailwindcss/typography'), require('daisyui')],
     theme: {
         extend: {
             inset: {
@@ -12,7 +13,10 @@ module.exports = {
             },
         },
         fontFamily: {
-            sans: ['Roboto', ...defaultTheme.fontFamily.sans],
+            sans: ['Inter', ...defaultTheme.fontFamily.sans],
         },
+    },
+    daisyui: {
+        themes: ['garden'],
     },
 };
