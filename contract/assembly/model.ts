@@ -28,6 +28,17 @@ export class Ticket {
         this.sold = this.sold + 1;
         this.remaining = this.remaining - 1;
     }
+    public increaseTickets(quantity: u32 ): void {
+        this.remaining = this.remaining + quantity;
+    }
+
+    public decreaseTickets(quantity: u32): void {
+        if (this.remaining < quantity) {
+            this.remaining = 0;
+        } else {
+            this.remaining = this.remaining -  quantity;
+        }
+    }
 
     public checkTicketAvailable(): boolean {
         return this.remaining > 0;
